@@ -10,13 +10,15 @@ RUN apt-get update && apt-get dist-upgrade -y && \
 
 RUN curl -k http://ftp.drupal.org/files/projects/drupal-${DRUPAL_VERSION}.tar.gz | tar zx -C /var/www/
 RUN mv /var/www/drupal-${DRUPAL_VERSION} /var/www/drupal
+RUN cp -rf /var/www/drupal/sites /tmp/
 
 # Add configuration files
 ADD config/default.conf /etc/nginx/conf.d/default.conf
+ADD config/settings.php /workdir/settings.php
 
 RUN chown -R 104:0 /var/www && chmod -R g+rw /var/www && \
     chmod a+x /workdir/entrypoint.sh && chmod g+rw /workdir
 
-VOLUME ["/var/www/sites/default/files"]
+VOLUME ["/var/www/drupal/sites"]
 
 USER 104
