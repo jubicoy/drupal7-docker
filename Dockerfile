@@ -17,9 +17,16 @@ ADD config/default.conf /etc/nginx/conf.d/default.conf
 ADD config/settings.php /workdir/settings.php
 ADD entrypoint.sh /workdir/entrypoint.sh
 
+# WebDAV configuration
+RUN apt-get install -y apache2-utils
+ADD config/webdav.conf /etc/nginx/conf.d/webdav.conf
+
 RUN chown -R 104:0 /var/www && chmod -R g+rw /var/www && \
     chmod a+x /workdir/entrypoint.sh && chmod g+rw /workdir
 
 VOLUME ["/var/www/drupal/sites"]
+
+EXPOSE 5000
+EXPOSE 5005
 
 USER 104
