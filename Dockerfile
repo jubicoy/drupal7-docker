@@ -8,7 +8,7 @@ RUN apt-get update && apt-get dist-upgrade -y && \
     php5-common php-pear curl php5-json php5-redis php5-memcache \
     gzip netcat drush mysql-client
 
-RUN curl -k http://ftp.drupal.org/files/projects/drupal-${DRUPAL_VERSION}.tar.gz | tar zx -C /var/www/
+RUN curl -k https://ftp.drupal.org/files/projects/drupal-${DRUPAL_VERSION}.tar.gz | tar zx -C /var/www/
 RUN mv /var/www/drupal-${DRUPAL_VERSION} /var/www/drupal
 RUN cp -rf /var/www/drupal/sites /tmp/
 
@@ -25,6 +25,11 @@ RUN chown -R 104:0 /var/www && chmod -R g+rw /var/www && \
     chmod a+x /workdir/entrypoint.sh && chmod g+rw /workdir
 
 VOLUME ["/var/www/drupal/sites"]
+
+# Additional CA certificate bundle (Mozilla)
+RUN mkdir -p /usr/local/share/ca-certificates/mozilla.org
+ADD config/mozilla.crt /usr/local/share/ca-certificates/mozilla.org/ca-bundle.crt
+RUN update-ca-certificates
 
 EXPOSE 5000
 EXPOSE 5005
