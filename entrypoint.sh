@@ -19,6 +19,10 @@ if [ ! -d /var/www/drupal/sites/default ]; then
     drush dl $module -y --destination=/var/www/drupal/sites/all/modules/
   done
 
+fi
+
+# Move Nginx configuration if does not exist
+if [ ! -f /var/www/drupal/sites/conf/default.conf ]; then
   # Move Nginx configuration to volume
   mkdir -p /var/www/drupal/sites/conf/
   mv /workdir/default.conf /var/www/drupal/sites/conf/default.conf
