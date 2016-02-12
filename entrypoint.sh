@@ -6,17 +6,24 @@ export LD_PRELOAD=libnss_wrapper.so
 export NSS_WRAPPER_PASSWD=/tmp/passwd
 export NSS_WRAPPER_GROUP=/etc/group
 
-IFS=';' read -r -a modules <<< "$DRUPAL_MODULES"
-
 if [ ! -d /var/www/drupal/sites/default ]; then
   # Copy initial sites and configuration
   cp -arf /tmp/sites/* /var/www/drupal/sites/
 
   # Download modules
+  IFS=';' read -r -a modules <<< "$DRUPAL_MODULES"
   for module in "${modules[@]}"
   do
     echo "Downloading module $module"
     drush dl $module -y --destination=/var/www/drupal/sites/all/modules/
+  done
+
+  # Download themes
+  IFS=';' read -r -a themes <<< "$DRUPAL_THEMES"
+  for theme in "${themes[@]}"
+  do
+    echo "Downloading theme $theme"
+    drush dl $theme -y --destination=/var/www/drupal/sites/all/themes/
   done
 
 fi

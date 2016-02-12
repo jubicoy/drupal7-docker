@@ -8,9 +8,6 @@ RUN apt-get update && apt-get dist-upgrade -y && \
     php5-common php-pear curl php5-json php5-redis php5-memcache \
     gzip netcat drush mysql-client
 
-# Sabre WebDAV support
-# RUN apt-get install -y php-sabre-dav
-
 RUN curl -k https://ftp.drupal.org/files/projects/drupal-${DRUPAL_VERSION}.tar.gz | tar zx -C /var/www/
 RUN mv /var/www/drupal-${DRUPAL_VERSION} /var/www/drupal
 RUN cp -rf /var/www/drupal/sites /tmp/
