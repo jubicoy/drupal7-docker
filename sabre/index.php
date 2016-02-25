@@ -18,7 +18,7 @@ $server->setBaseUri('/');
 
 // The lock manager is reponsible for making sure users don't overwrite
 // each others changes.
-$lockBackend = new DAV\Locks\Backend\File('locks');
+$lockBackend = new DAV\Locks\Backend\File('/tmp/davlocks');
 $lockPlugin = new DAV\Locks\Plugin($lockBackend);
 $server->addPlugin($lockPlugin);
 
