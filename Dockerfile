@@ -38,8 +38,8 @@ RUN chown -R 104:0 /var/www && chmod -R g+rw /var/www && \
 VOLUME ["/var/www/drupal/sites"]
 
 # Additional CA certificate bundle (Mozilla)
-RUN mkdir -p /usr/local/share/ca-certificates/mozilla.org
-ADD config/mozilla.crt /usr/local/share/ca-certificates/mozilla.org/ca-bundle.crt
+ADD mailchimp-ca.sh /workdir/mailchimp-ca.sh
+RUN chmod a+x /workdir/mailchimp-ca.sh && bash /workdir/mailchimp-ca.sh
 RUN update-ca-certificates
 
 EXPOSE 5000
