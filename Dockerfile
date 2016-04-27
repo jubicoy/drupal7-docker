@@ -42,6 +42,10 @@ ADD mailchimp-ca.sh /workdir/mailchimp-ca.sh
 RUN chmod a+x /workdir/mailchimp-ca.sh && bash /workdir/mailchimp-ca.sh
 RUN update-ca-certificates
 
+# Bad Bot Blocker configuration for nginx
+ADD config/badbot/blacklist.conf /etc/nginx/conf.d/blacklist.conf
+ADD config/badbot/blockips.conf /etc/nginx/conf.d/blockips.conf
+
 EXPOSE 5000
 EXPOSE 5005
 
