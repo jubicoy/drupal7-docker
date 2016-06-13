@@ -31,6 +31,7 @@ ADD config/default.conf /workdir/default.conf
 RUN rm -rf /etc/nginx/conf.d/default.conf && ln -s /var/www/drupal/sites/conf/default.conf /etc/nginx/conf.d/default.conf
 ADD config/settings.php /workdir/settings.php
 ADD entrypoint.sh /workdir/entrypoint.sh
+ADD config/nginx.conf /etc/nginx/nginx.conf
 
 RUN chown -R 104:0 /var/www && chmod -R g+rw /var/www && \
     chmod a+x /workdir/entrypoint.sh && chmod g+rw /workdir
