@@ -1,12 +1,12 @@
 FROM jubicoy/nginx-php:latest
 ENV DRUPAL_VERSION 7.50
 
-RUN apt-get update && apt-get dist-upgrade -y && \
+RUN apt-get update && \
     apt-get -y install php5-fpm php5-mysql php-apc \
     php5-imagick php5-imap php5-mcrypt php5-curl \
     php5-cli php5-gd php5-pgsql php5-sqlite \
     php5-common php-pear curl php5-json php5-redis php5-memcache \
-    gzip netcat drush mysql-client imagemagick
+    gzip netcat drush mysql-client imagemagick make php5-dev php-pear
 
 RUN curl -k https://ftp.drupal.org/files/projects/drupal-${DRUPAL_VERSION}.tar.gz | tar zx -C /var/www/
 RUN mv /var/www/drupal-${DRUPAL_VERSION} /var/www/drupal
@@ -26,12 +26,15 @@ ADD sabre/index.php /var/www/webdav/index.php
 RUN cd /var/www/webdav && composer require sabre/dav ~3.1.0 && composer update sabre/dav && cd
 
 # Add configuration files
-#ADD config/default.conf /etc/nginx/conf.d/default.conf
 ADD config/default.conf /workdir/default.conf
 RUN rm -rf /etc/nginx/conf.d/default.conf && ln -s /var/www/drupal/sites/conf/default.conf /etc/nginx/conf.d/default.conf
 ADD config/settings.php /workdir/settings.php
 ADD entrypoint.sh /workdir/entrypoint.sh
 ADD config/nginx.conf /etc/nginx/nginx.conf
+
+# Install custom PHP extensions
+RUN pecl install jsmin
+RUN echo 'extension="jsmin.so"' >> /etc/php5/fpm/php.ini
 
 RUN chown -R 104:0 /var/www && chmod -R g+rw /var/www && \
     chmod a+x /workdir/entrypoint.sh && chmod g+rw /workdir
@@ -42,10 +45,6 @@ VOLUME ["/var/www/drupal/sites"]
 ADD mailchimp-ca.sh /workdir/mailchimp-ca.sh
 RUN chmod a+x /workdir/mailchimp-ca.sh && bash /workdir/mailchimp-ca.sh
 RUN update-ca-certificates
-
-# Bad Bot Blocker configuration for nginx
-ADD config/badbot/blacklist.conf /etc/nginx/conf.d/blacklist.conf
-ADD config/badbot/blockips.conf /etc/nginx/conf.d/blockips.conf
 
 # PHP max upload size
 RUN sed -i '/upload_max_filesize/c\upload_max_filesize = 250M' /etc/php5/fpm/php.ini
