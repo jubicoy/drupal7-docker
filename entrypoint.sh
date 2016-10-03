@@ -35,7 +35,7 @@ if [ ! -f /var/www/drupal/sites/conf/default.conf ]; then
     mv /workdir/default.conf /var/www/drupal/sites/conf/default.conf
 fi
 
-if [ ! -f /tmp/dav_auth ]; then
+if [ ! -f /tmp/dav_auth ] && [ ! -z "$DAV_PASS" ] && [ ! -z "$DAV_USER" ]; then
   # Create WebDAV Basic auth user
   echo ${DAV_PASS}|htpasswd -i -c /tmp/dav_auth ${DAV_USER}
 fi

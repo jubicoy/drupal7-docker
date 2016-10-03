@@ -28,7 +28,6 @@ RUN cd /var/www/webdav && composer require sabre/dav ~3.1.0 && composer update s
 # Add configuration files
 ADD config/default.conf /workdir/default.conf
 RUN rm -rf /etc/nginx/conf.d/default.conf && ln -s /var/www/drupal/sites/conf/default.conf /etc/nginx/conf.d/default.conf
-ADD config/settings.php /workdir/settings.php
 ADD entrypoint.sh /workdir/entrypoint.sh
 ADD config/nginx.conf /etc/nginx/nginx.conf
 
