@@ -9,9 +9,12 @@ RUN apt-get update && \
     gzip netcat drush mysql-client imagemagick make php5-dev php-pear vim && \
     apt-get clean
 
+
+
 RUN curl -k https://ftp.drupal.org/files/projects/drupal-${DRUPAL_VERSION}.tar.gz | tar zx -C /var/www/
 RUN mv /var/www/drupal-${DRUPAL_VERSION} /var/www/drupal
 RUN cp -rf /var/www/drupal/sites /tmp/
+ADD config/default.settings.php /tmp/sites/default/
 
 # Composer for Sabre installation
 ENV COMPOSER_VERSION 1.0.0-alpha11
@@ -27,6 +30,10 @@ ADD sabre/index.php /var/www/webdav/index.php
 RUN cd /var/www/webdav && composer require sabre/dav ~3.1.0 && composer update sabre/dav && cd
 
 # Add configuration files
+RUN mkdir -p /var/www/drupal/sites/default
+COPY config/default.settings.php /workdir/settings.php
+RUN cp /workdir/settings.php /var/www/drupal/sites/default/settings.php
+
 ADD config/default.conf /workdir/default.conf
 RUN rm -rf /etc/nginx/conf.d/default.conf && ln -s /var/www/drupal/sites/conf/default.conf /etc/nginx/conf.d/default.conf
 ADD entrypoint.sh /workdir/entrypoint.sh

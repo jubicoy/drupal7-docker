@@ -620,4 +620,3 @@ $conf['404_fast_html'] = '<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML+RDFa 1.0//EN"
 $conf['advagg_skip_far_future_check'] = TRUE;
 $conf['advagg_skip_gzip_check'] = TRUE;
 $conf['advagg_skip_404_check'] = TRUE;
-
