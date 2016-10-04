@@ -6,7 +6,8 @@ RUN apt-get update && \
     php5-imagick php5-imap php5-mcrypt php5-curl \
     php5-cli php5-gd php5-pgsql php5-sqlite \
     php5-common php-pear curl php5-json php5-redis php5-memcache \
-    gzip netcat drush mysql-client imagemagick make php5-dev php-pear
+    gzip netcat drush mysql-client imagemagick make php5-dev php-pear vim && \
+    apt-get clean
 
 RUN curl -k https://ftp.drupal.org/files/projects/drupal-${DRUPAL_VERSION}.tar.gz | tar zx -C /var/www/
 RUN mv /var/www/drupal-${DRUPAL_VERSION} /var/www/drupal
@@ -17,7 +18,7 @@ ENV COMPOSER_VERSION 1.0.0-alpha11
 RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer --version=${COMPOSER_VERSION}
 
 # WebDAV configuration
-RUN apt-get install -y apache2-utils
+RUN apt-get install -y apache2-utils && apt-get clean && rm -rf /var/lib/apt/lists/*
 RUN mkdir -p /var/www/webdav && mkdir -p /var/www/webdav/locks && chmod -R 777 /var/www/webdav/locks
 ADD config/webdav.conf /etc/nginx/conf.d/webdav.conf
 ADD sabre/index.php /var/www/webdav/index.php
@@ -48,9 +49,12 @@ RUN update-ca-certificates
 # PHP max upload size
 RUN sed -i '/upload_max_filesize/c\upload_max_filesize = 250M' /etc/php5/fpm/php.ini
 RUN sed -i '/post_max_size/c\post_max_size = 250M' /etc/php5/fpm/php.ini
-
+# PHP max execution time
+RUN sed -i '/max_execution_time/c\max_execution_time = 60' /etc/php5/fpm/php.ini
 
 EXPOSE 5000
 EXPOSE 5005
 
 USER 104
+
+CMD ["/usr/bin/supervisord"]
