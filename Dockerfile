@@ -1,5 +1,5 @@
 FROM jubicoy/nginx-php:latest
-ENV DRUPAL_VERSION 7.50
+ENV DRUPAL_VERSION 7.51
 
 RUN apt-get update && \
     apt-get -y install php5-fpm php5-mysql php-apc \
