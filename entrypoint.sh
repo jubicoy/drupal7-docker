@@ -40,4 +40,8 @@ if [ ! -f /tmp/dav_auth ] && [ ! -z "$DAV_PASS" ] && [ ! -z "$DAV_USER" ]; then
   echo ${DAV_PASS}|htpasswd -i -c /tmp/dav_auth ${DAV_USER}
 fi
 
+if [ -d /var/www/drupal ]; then
+  (cd /var/www/drupal/; drush updb)
+fi
+
 exec "$@"

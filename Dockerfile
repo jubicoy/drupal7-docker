@@ -1,12 +1,12 @@
-FROM jubicoy/nginx-php:latest
+FROM jubicoy/nginx-php:maintenance
 ENV DRUPAL_VERSION 7.51
 
 RUN apt-get update && \
-    apt-get -y install php5-fpm php5-mysql php-apc \
-    php5-imagick php5-imap php5-mcrypt php5-curl \
-    php5-cli php5-gd php5-pgsql php5-sqlite \
-    php5-common php-pear curl php5-json php5-redis php5-memcache \
-    gzip netcat drush mysql-client imagemagick make php5-dev php-pear vim && \
+    apt-get -y install php7.0-fpm php7.0-mysql php-apcu \
+    php-imagick php7.0-imap php7.0-mcrypt php7.0-curl \
+    php7.0-cli php7.0-gd php7.0-pgsql php7.0-sqlite php7.0-zip \
+    php7.0-common php-pear curl php7.0-json php-redis php-memcache \
+    gzip netcat drush mysql-client imagemagick make php7.0-dev php-pear vim git && \
     apt-get clean
 
 
@@ -41,7 +41,7 @@ ADD config/nginx.conf /etc/nginx/nginx.conf
 
 # Install custom PHP extensions
 RUN pecl install jsmin
-RUN echo 'extension="jsmin.so"' >> /etc/php5/fpm/php.ini
+RUN echo 'extension="jsmin.so"' >> /etc/php/7.0/fpm/php.ini
 
 RUN chown -R 104:0 /var/www && chmod -R g+rw /var/www && \
     chmod a+x /workdir/entrypoint.sh && chmod g+rw /workdir
@@ -54,10 +54,10 @@ RUN chmod a+x /workdir/mailchimp-ca.sh && bash /workdir/mailchimp-ca.sh
 RUN update-ca-certificates
 
 # PHP max upload size
-RUN sed -i '/upload_max_filesize/c\upload_max_filesize = 250M' /etc/php5/fpm/php.ini
-RUN sed -i '/post_max_size/c\post_max_size = 250M' /etc/php5/fpm/php.ini
+RUN sed -i '/upload_max_filesize/c\upload_max_filesize = 250M' /etc/php/7.0/fpm/php.ini
+RUN sed -i '/post_max_size/c\post_max_size = 250M' /etc/php/7.0/fpm/php.ini
 # PHP max execution time
-RUN sed -i '/max_execution_time/c\max_execution_time = 60' /etc/php5/fpm/php.ini
+RUN sed -i '/max_execution_time/c\max_execution_time = 60' /etc/php/7.0/fpm/php.ini
 
 EXPOSE 5000
 EXPOSE 5005
