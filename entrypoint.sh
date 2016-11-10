@@ -9,7 +9,6 @@ export NSS_WRAPPER_GROUP=/etc/group
 if [ ! -d /var/www/drupal/sites/default ]; then
   # Copy initial sites and configuration
   cp -arf /tmp/sites/* /var/www/drupal/sites/
-
   # Download modules
   IFS=';' read -r -a modules <<< "$DRUPAL_MODULES"
   for module in "${modules[@]}"
@@ -25,7 +24,9 @@ if [ ! -d /var/www/drupal/sites/default ]; then
     echo "Downloading theme $theme"
     drush dl $theme -y --destination=/var/www/drupal/sites/all/themes/
   done
-
+else
+  echo "Applying required database updates"
+  (cd /var/www/drupal/; drush updb)
 fi
 
 # Move Nginx configuration if does not exist
@@ -40,8 +41,5 @@ if [ ! -f /tmp/dav_auth ] && [ ! -z "$DAV_PASS" ] && [ ! -z "$DAV_USER" ]; then
   echo ${DAV_PASS}|htpasswd -i -c /tmp/dav_auth ${DAV_USER}
 fi
 
-if [ -d /var/www/drupal ]; then
-  (cd /var/www/drupal/; drush updb)
-fi
 
 exec "$@"

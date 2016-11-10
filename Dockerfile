@@ -6,7 +6,7 @@ RUN apt-get update && \
     php-imagick php7.0-imap php7.0-mcrypt php7.0-curl \
     php7.0-cli php7.0-gd php7.0-pgsql php7.0-sqlite php7.0-zip \
     php7.0-common php-pear curl php7.0-json php-redis php-memcache \
-    gzip netcat drush mysql-client imagemagick make php7.0-dev php-pear vim git && \
+    gzip netcat drush mysql-client imagemagick make php7.0-dev php-pear vim && \
     apt-get clean
 
 
@@ -40,8 +40,9 @@ ADD entrypoint.sh /workdir/entrypoint.sh
 ADD config/nginx.conf /etc/nginx/nginx.conf
 
 # Install custom PHP extensions
-RUN pecl install jsmin
-RUN echo 'extension="jsmin.so"' >> /etc/php/7.0/fpm/php.ini
+# This is disabled for now since PHP7 support for jsmin is still poor
+#RUN pecl install jsmin
+#RUN echo 'extension="jsmin.so"' >> /etc/php/7.0/fpm/php.ini
 
 RUN chown -R 104:0 /var/www && chmod -R g+rw /var/www && \
     chmod a+x /workdir/entrypoint.sh && chmod g+rw /workdir
