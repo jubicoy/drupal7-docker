@@ -15,6 +15,7 @@ RUN curl -k https://ftp.drupal.org/files/projects/drupal-${DRUPAL_VERSION}.tar.g
 RUN mv /var/www/drupal-${DRUPAL_VERSION} /var/www/drupal
 RUN cp -rf /var/www/drupal/sites /tmp/
 ADD config/default.settings.php /tmp/sites/default/
+RUN cp -f /var/www/drupal/robots.txt /workdir/
 
 # Composer for Sabre installation
 ENV COMPOSER_VERSION 1.0.0-alpha11
@@ -36,6 +37,7 @@ RUN cp /workdir/settings.php /var/www/drupal/sites/default/settings.php
 
 ADD config/default.conf /workdir/default.conf
 RUN rm -rf /etc/nginx/conf.d/default.conf && ln -s /var/www/drupal/sites/conf/default.conf /etc/nginx/conf.d/default.conf
+RUN rm -rf /var/www/drupal/robots.txt && ln -s /var/www/drupal/sites/robots.txt /var/www/drupal/robots.txt
 ADD entrypoint.sh /workdir/entrypoint.sh
 ADD config/nginx.conf /etc/nginx/nginx.conf
 

@@ -6,6 +6,10 @@ export LD_PRELOAD=libnss_wrapper.so
 export NSS_WRAPPER_PASSWD=/tmp/passwd
 export NSS_WRAPPER_GROUP=/etc/group
 
+if [ ! -f /var/www/drupal/robots.txt ]; then
+  mv -f /workdir/robots.txt /var/www/drupal/sites/robots.txt
+fi
+
 if [ ! -d /var/www/drupal/sites/default ]; then
   # Copy initial sites and configuration
   cp -arf /tmp/sites/* /var/www/drupal/sites/
