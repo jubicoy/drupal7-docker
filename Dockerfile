@@ -1,5 +1,5 @@
 FROM jubicoy/nginx-php:maintenance
-ENV DRUPAL_VERSION 7.51
+ENV DRUPAL_VERSION 7.52
 
 RUN apt-get update && \
     apt-get -y install php7.0-fpm php7.0-mysql php-apcu \
