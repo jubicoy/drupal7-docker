@@ -13,12 +13,13 @@ fi
 if [ ! -d /var/www/drupal/sites/default ]; then
   # Copy initial sites and configuration
   cp -arf /tmp/sites/* /var/www/drupal/sites/
+  echo "Will now download modules"
   # Download modules
   IFS=';' read -r -a modules <<< "$DRUPAL_MODULES"
   for module in "${modules[@]}"
   do
     echo "Downloading module $module"
-    drush dl $module -y --destination=/var/www/drupal/sites/all/modules/
+    drush dl ${module}-7.x -y --destination=/var/www/drupal/sites/all/modules/
   done
 
   # Download themes

@@ -3,10 +3,10 @@ ENV DRUPAL_VERSION 7.53
 
 RUN apt-get update && \
     apt-get -y install php7.0-fpm php7.0-mysql php-apcu \
-    php-imagick php7.0-imap php7.0-mcrypt php7.0-curl \
+    php-imagick php7.0-imap php7.0-mcrypt php7.0-curl php7.0-mbstring \
     php7.0-cli php7.0-gd php7.0-pgsql php7.0-sqlite php7.0-zip \
     php7.0-common php-pear curl php7.0-json php-redis php-memcache \
-    gzip netcat drush mysql-client imagemagick make php7.0-dev php-pear vim && \
+    gzip netcat mysql-client imagemagick make php7.0-dev php-pear vim && \
     apt-get clean
 
 
@@ -45,6 +45,10 @@ ADD config/nginx.conf /etc/nginx/nginx.conf
 # This is disabled for now since PHP7 support for jsmin is still poor
 #RUN pecl install jsmin
 #RUN echo 'extension="jsmin.so"' >> /etc/php/7.0/fpm/php.ini
+
+# Install Drush
+RUN php -r "readfile('https://s3.amazonaws.com/files.drush.org/drush.phar');" > drush && chmod +x drush
+RUN mv drush /usr/local/bin/
 
 RUN chown -R 104:0 /var/www && chmod -R g+rw /var/www && \
     chmod a+x /workdir/entrypoint.sh && chmod g+rw /workdir

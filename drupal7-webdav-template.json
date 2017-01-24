@@ -1,0 +1,400 @@
+{
+  "kind": "Template",
+  "apiVersion": "v1",
+  "metadata": {
+    "name": "drupal7-mysql-webdav",
+    "creationTimestamp": null,
+    "annotations": {
+      "description": "Drupal 7 with persistent storage and MySQL as database. Data exchange using WebDAV.",
+      "iconClass": "icon-php",
+      "tags": "instant-app,mysql,drupal7,webdav"
+    }
+  },
+  "objects": [
+    {
+      "kind": "Service",
+      "apiVersion": "v1",
+      "metadata": {
+        "name": "${DRUPAL_SERVICE_NAME}-web",
+        "creationTimestamp": null
+      },
+      "spec": {
+        "ports": [
+          {
+            "name": "web",
+            "protocol": "TCP",
+            "port": 5000,
+            "targetPort": 5000,
+            "nodePort": 0
+          }
+        ],
+        "selector": {
+          "name": "${DRUPAL_SERVICE_NAME}-web"
+        },
+        "portalIP": "",
+        "type": "ClusterIP",
+        "sessionAffinity": "None"
+      }
+    },
+    {
+      "kind": "Service",
+      "apiVersion": "v1",
+      "metadata": {
+        "name": "${DRUPAL_SERVICE_NAME}-db",
+        "creationTimestamp": null
+      },
+      "spec": {
+        "ports": [
+          {
+            "name": "database",
+            "protocol": "TCP",
+            "port": 3306,
+            "targetPort": "${DRUPAL_SERVICE_NAME}-db",
+            "nodePort": 0
+          }
+        ],
+        "selector": {
+          "name": "${DRUPAL_SERVICE_NAME}-db"
+        },
+        "portalIP": "",
+        "type": "ClusterIP",
+        "sessionAffinity": "None"
+      }
+    },
+    {
+      "kind": "Service",
+      "apiVersion": "v1",
+      "metadata": {
+        "name": "${DRUPAL_SERVICE_NAME}-dav",
+        "creationTimestamp": null
+      },
+      "spec": {
+        "ports": [
+          {
+            "name": "dav",
+            "protocol": "TCP",
+            "port": 5005,
+            "targetPort": "${DRUPAL_SERVICE_NAME}-dav"
+          }
+        ],
+        "selector": {
+          "name": "${DRUPAL_SERVICE_NAME}-web"
+        },
+        "portalIP": "",
+        "type": "ClusterIP",
+        "sessionAffinity": "None"
+      }
+    },
+    {
+      "kind": "Route",
+      "apiVersion": "v1",
+      "metadata": {
+        "name": "drupal",
+        "creationTimestamp": null
+      },
+      "spec": {
+        "to": {
+          "kind": "Service",
+          "name": "${DRUPAL_SERVICE_NAME}-web"
+        }
+      }
+    },
+    {
+      "kind": "Route",
+      "apiVersion": "v1",
+      "metadata": {
+        "name": "drupal-dav",
+        "creationTimestamp": null
+      },
+      "spec": {
+        "to": {
+          "kind": "Service",
+          "name": "${DRUPAL_SERVICE_NAME}-dav"
+        },
+        "tls": {
+          "termination": "edge",
+          "insecureEdgeTerminationPolicy": "Redirect"
+        }
+      }
+    },
+    {
+      "kind": "DeploymentConfig",
+      "apiVersion": "v1",
+      "metadata": {
+        "name": "${DRUPAL_SERVICE_NAME}-web",
+        "creationTimestamp": null
+      },
+      "spec": {
+        "strategy": {
+          "type": "Rolling",
+          "resources": {}
+        },
+        "triggers": [
+          {
+            "type": "ConfigChange"
+          }
+        ],
+        "replicas": 1,
+        "selector": {
+          "name": "${DRUPAL_SERVICE_NAME}-web"
+        },
+        "template": {
+          "metadata": {
+            "creationTimestamp": null,
+            "labels": {
+              "name": "${DRUPAL_SERVICE_NAME}-web"
+            }
+          },
+          "spec": {
+            "containers": [
+              {
+                "name": "drupal-web",
+                "image": "jubicoy/drupal7",
+                "ports": [
+                  {
+                    "containerPort": 5000,
+                    "name": "${DRUPAL_SERVICE_NAME}-web"
+                  },
+                  {
+                    "containerPort": 5005,
+                    "name": "${DRUPAL_SERVICE_NAME}-dav"
+                  }
+                ],
+                "env": [
+                  {
+                    "name": "MYSQL_USER",
+                    "value": "${MYSQL_USER}"
+                  },
+                  {
+                    "name": "MYSQL_PASSWORD",
+                    "value": "${MYSQL_PASSWORD}"
+                  },
+                  {
+                    "name": "MYSQL_DATABASE",
+                    "value": "${MYSQL_DATABASE}"
+                  },
+                  {
+                    "name": "DRUPAL_SERVICE_NAME",
+                    "value": "${DRUPAL_SERVICE_NAME}"
+                  },
+                  {
+                    "name": "DAV_USER",
+                    "value": "${DAV_USER}"
+                  },
+                  {
+                    "name": "DAV_PASS",
+                    "value": "${DAV_PASS}"
+                  },
+                  {
+                    "name": "DRUPAL_MODULES",
+                    "value": "${DRUPAL_MODULES}"
+                  },
+                  {
+                    "name": "DRUPAL_THEMES",
+                    "value": "${DRUPAL_THEMES}"
+                  }
+                ],
+                "resources": {},
+                "volumeMounts": [
+                  {
+                    "name": "${DRUPAL_SERVICE_NAME}-data",
+                    "mountPath": "/var/www/drupal/sites"
+                  }
+                ],
+                "terminationMessagePath": "/dev/termination-log",
+                "imagePullPolicy": "Always",
+                "capabilities": {},
+                "securityContext": {
+                  "capabilities": {},
+                  "privileged": false
+                }
+              }
+            ],
+            "volumes": [
+              {
+                "name": "${DRUPAL_SERVICE_NAME}-data",
+                "persistentVolumeClaim": {
+                  "claimName": "${DRUPAL_SERVICE_NAME}"
+                }
+              }
+            ],
+            "restartPolicy": "Always",
+            "dnsPolicy": "ClusterFirst"
+          }
+        }
+      }
+    },
+    {
+      "kind": "DeploymentConfig",
+      "apiVersion": "v1",
+      "metadata": {
+        "name": "${DRUPAL_SERVICE_NAME}-db",
+        "creationTimestamp": null
+      },
+      "spec": {
+        "strategy": {
+          "type": "Rolling",
+          "resources": {}
+        },
+        "triggers": [
+          {
+            "type": "ConfigChange"
+          }
+        ],
+        "replicas": 1,
+        "selector": {
+          "name": "${DRUPAL_SERVICE_NAME}-db"
+        },
+        "template": {
+          "metadata": {
+            "creationTimestamp": null,
+            "labels": {
+              "name": "${DRUPAL_SERVICE_NAME}-db"
+            }
+          },
+          "spec": {
+            "containers": [
+              {
+                "name": "mysql",
+                "image": "jubicoy/mysql55-jessie",
+                "ports": [
+                  {
+                    "containerPort": 3306,
+                    "name": "${DRUPAL_SERVICE_NAME}-db"
+                  }
+                ],
+                "env": [
+                  {
+                    "name": "MYSQL_USER",
+                    "value": "${MYSQL_USER}"
+                  },
+                  {
+                    "name": "MYSQL_ROOT_PASSWORD",
+                    "value": "${MYSQL_ROOT_PASSWORD}"
+                  },
+                  {
+                    "name": "MYSQL_PASSWORD",
+                    "value": "${MYSQL_PASSWORD}"
+                  },
+                  {
+                    "name": "MYSQL_DATABASE",
+                    "value": "${MYSQL_DATABASE}"
+                  }
+                ],
+                "resources": {},
+                "volumeMounts": [
+                  {
+                    "name": "${DRUPAL_SERVICE_NAME}-data",
+                    "mountPath": "/volume"
+                  }
+                ],
+                "terminationMessagePath": "/dev/termination-log",
+                "imagePullPolicy": "Always",
+                "capabilities": {},
+                "securityContext": {
+                  "capabilities": {},
+                  "privileged": false
+                }
+              }
+            ],
+            "volumes": [
+              {
+                "name": "${DRUPAL_SERVICE_NAME}-data",
+                "persistentVolumeClaim": {
+                  "claimName": "${DRUPAL_SERVICE_NAME}"
+                }
+              }
+            ],
+            "restartPolicy": "Always",
+            "dnsPolicy": "ClusterFirst"
+          }
+        }
+      }
+    },
+    {
+      "kind": "PersistentVolumeClaim",
+      "apiVersion": "v1",
+      "metadata": {
+        "name": "${DRUPAL_SERVICE_NAME}"
+      },
+      "spec": {
+        "accessModes": [
+          "ReadWriteMany"
+        ],
+        "resources": {
+          "requests": {
+            "storage": "${VOLUME_CAPACITY}"
+          }
+        }
+      }
+    }
+  ],
+  "parameters": [
+    {
+      "name": "DRUPAL_SERVICE_NAME",
+      "description": "Drupal service name.",
+      "value": "drupal"
+    },
+    {
+      "name": "VOLUME_CAPACITY",
+      "description": "Volume space available for data, e.g. 512Mi, 2Gi",
+      "value": "10Gi",
+      "required": true
+    },
+    {
+      "name": "MYSQL_ROOT_PASSWORD",
+      "description": "MySQL root password.",
+      "generate": "expression",
+      "from": "[a-zA-Z0-9]{16}",
+      "required": true
+    },
+    {
+      "name": "MYSQL_USER",
+      "description": "MySQL database username.",
+      "generate": "expression",
+      "from": "user[A-Z0-9]{3}",
+      "required": true
+    },
+    {
+      "name": "MYSQL_PASSWORD",
+      "description": "MySQL database user's password..",
+      "generate": "expression",
+      "from": "[a-zA-Z0-9]{16}",
+      "required": true
+    },
+    {
+      "name": "MYSQL_DATABASE",
+      "description": "MySQL database name.",
+      "required": true,
+      "value": "drupal"
+    },
+    {
+      "name": "DAV_USER",
+      "description": "WebDAV username.",
+      "required": true,
+      "value": "admin"
+    },
+    {
+      "name": "DAV_PASS",
+      "description": "WebDAV password.",
+      "required": true,
+      "generate": "expression",
+      "from": "[a-zA-Z0-9]{16}"
+    },
+    {
+      "name": "DRUPAL_MODULES",
+      "description": "Comma separated Drupal modules to install.",
+      "required": false,
+      "value": "views;ctools;pathauto;token;admin_theme;admin_menu;adminimal_admin_menu;menu_block;localization_update;internationalization;redirect;variable;ckeditor;imce;filefield_sources;honeypot;typekit;transliteration;webform;mailsystem;smtp;paragraphs;entity;xml_sitemap;google_analytics;metatag;background_image_formatter;date;rules;entity;colorbox;libraries;block_class;admin_language;webform_reply_to;advagg;webform_reply_to;minify"
+    },
+    {
+      "name": "DRUPAL_THEMES",
+      "description": "Comma separated Drupal themes to install.",
+      "required": false,
+      "value": "bootstrap;adminimal_theme"
+    }
+  ],
+  "labels": {
+    "template": "drupal7-mysql"
+  }
+}
