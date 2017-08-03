@@ -1,14 +1,13 @@
-FROM jubicoy/nginx-php:php7
+FROM jubicoy/nginx-php:latest
 ENV DRUPAL_VERSION 7.54
 
 RUN apt-get update && \
-    apt-get -y install php7.0-fpm php7.0-mysql php-apcu \
-    php-imagick php7.0-imap php7.0-mcrypt php7.0-curl php7.0-mbstring \
-    php7.0-cli php7.0-gd php7.0-pgsql php7.0-sqlite php7.0-zip \
-    php7.0-common php-pear curl php7.0-json php-redis php-memcache git \
-    gzip netcat mysql-client imagemagick make php7.0-dev php-pear vim && \
-    apt-get clean
-
+        apt-get -y install php5-fpm php5-mysql php-apc \
+        php5-imagick php5-imap php5-mcrypt php5-curl \
+        php5-cli php5-gd php5-pgsql php5-sqlite \
+        php5-common php-pear curl php5-json php5-redis php5-memcache \
+        gzip netcat mysql-client wget && \
+        apt-get clean
 
 
 RUN curl -k https://ftp.drupal.org/files/projects/drupal-${DRUPAL_VERSION}.tar.gz | tar zx -C /var/www/
@@ -42,10 +41,8 @@ ADD entrypoint.sh /workdir/entrypoint.sh
 ADD config/nginx.conf /etc/nginx/nginx.conf
 
 # Install jsmin php extension
-RUN git clone -b feature/php7 https://github.com/sqmk/pecl-jsmin.git /workdir/pecl-jsmin
-RUN (cd /workdir/pecl-jsmin && phpize && ./configure && make install clean)
-RUN touch /etc/php/7.0/cli/conf.d/20-jsmin.ini && echo 'extension="jsmin.so"' >> /etc/php/7.0/cli/conf.d/20-jsmin.ini
-RUN echo 'extension="jsmin.so"' >> /etc/php/7.0/fpm/php.ini
+RUN pecl install jsmin
+RUN echo 'extension="jsmin.so"' >> /etc/php5/fpm/php.ini
 
 # Install Drush
 RUN php -r "readfile('https://s3.amazonaws.com/files.drush.org/drush.phar');" > drush && chmod +x drush
@@ -62,10 +59,11 @@ RUN chmod a+x /workdir/mailchimp-ca.sh && bash /workdir/mailchimp-ca.sh
 RUN update-ca-certificates
 
 # PHP max upload size
-RUN sed -i '/upload_max_filesize/c\upload_max_filesize = 250M' /etc/php/7.0/fpm/php.ini
-RUN sed -i '/post_max_size/c\post_max_size = 250M' /etc/php/7.0/fpm/php.ini
+RUN sed -i '/upload_max_filesize/c\upload_max_filesize = 250M' /etc/php5/fpm/php.ini
+RUN sed -i '/post_max_size/c\post_max_size = 250M' /etc/php5/fpm/php.ini
+
 # PHP max execution time
-RUN sed -i '/max_execution_time/c\max_execution_time = 60' /etc/php/7.0/fpm/php.ini
+RUN sed -i '/max_execution_time/c\max_execution_time = 60' /etc/php5/fpm/php.ini
 
 EXPOSE 5000
 EXPOSE 5005
