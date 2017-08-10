@@ -34,10 +34,12 @@ RUN cd /var/www/webdav && composer require sabre/dav ~3.1.0 && composer update s
 RUN mkdir -p /var/www/drupal/sites/default
 COPY config/default.settings.php /workdir/settings.php
 RUN cp /workdir/settings.php /var/www/drupal/sites/default/settings.php
+RUN mv /etc/php/7.0/fpm/php.ini /tmp/php.ini
 
 ADD config/default.conf /workdir/default.conf
 RUN rm -rf /etc/nginx/conf.d/default.conf && ln -s /var/www/drupal/sites/conf/default.conf /etc/nginx/conf.d/default.conf
 RUN rm -rf /var/www/drupal/robots.txt && ln -s /var/www/drupal/sites/robots.txt /var/www/drupal/robots.txt
+RUN ln -s /var/www/drupal/sites/conf/php.ini /etc/php/7.0/fpm/php.ini
 ADD entrypoint.sh /workdir/entrypoint.sh
 ADD config/nginx.conf /etc/nginx/nginx.conf
 
@@ -45,7 +47,7 @@ ADD config/nginx.conf /etc/nginx/nginx.conf
 RUN git clone -b feature/php7 https://github.com/sqmk/pecl-jsmin.git /workdir/pecl-jsmin
 RUN (cd /workdir/pecl-jsmin && phpize && ./configure && make install clean)
 RUN touch /etc/php/7.0/cli/conf.d/20-jsmin.ini && echo 'extension="jsmin.so"' >> /etc/php/7.0/cli/conf.d/20-jsmin.ini
-RUN echo 'extension="jsmin.so"' >> /etc/php/7.0/fpm/php.ini
+RUN echo 'extension="jsmin.so"' >> /tmp/php.ini
 
 # Install Drush
 RUN php -r "readfile('https://s3.amazonaws.com/files.drush.org/drush.phar');" > drush && chmod +x drush
@@ -62,10 +64,10 @@ RUN chmod a+x /workdir/mailchimp-ca.sh && bash /workdir/mailchimp-ca.sh
 RUN update-ca-certificates
 
 # PHP max upload size
-RUN sed -i '/upload_max_filesize/c\upload_max_filesize = 250M' /etc/php/7.0/fpm/php.ini
-RUN sed -i '/post_max_size/c\post_max_size = 250M' /etc/php/7.0/fpm/php.ini
+RUN sed -i '/upload_max_filesize/c\upload_max_filesize = 250M' /tmp/php.ini
+RUN sed -i '/post_max_size/c\post_max_size = 250M' /tmp/php.ini
 # PHP max execution time
-RUN sed -i '/max_execution_time/c\max_execution_time = 60' /etc/php/7.0/fpm/php.ini
+RUN sed -i '/max_execution_time/c\max_execution_time = 60' /tmp/php.ini
 
 EXPOSE 5000
 EXPOSE 5005

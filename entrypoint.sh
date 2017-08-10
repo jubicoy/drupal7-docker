@@ -46,5 +46,8 @@ if [ ! -f /tmp/dav_auth ] && [ ! -z "$DAV_PASS" ] && [ ! -z "$DAV_USER" ]; then
   echo ${DAV_PASS}|htpasswd -i -c /tmp/dav_auth ${DAV_USER}
 fi
 
+if [ ! -f /var/www/drupal/sites/conf/php.ini ]; then
+	mv /tmp/php.ini /var/www/drupal/sites/conf/php.ini
+fi
 
 exec "$@"
