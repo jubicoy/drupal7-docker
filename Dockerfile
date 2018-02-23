@@ -1,5 +1,5 @@
 FROM jubicoy/nginx-php:php7
-ENV DRUPAL_VERSION 7.56
+ENV DRUPAL_VERSION 7.57
 
 RUN apt-get update && \
     apt-get -y install php7.0-fpm php7.0-mysql php-apcu \
@@ -50,7 +50,7 @@ RUN touch /etc/php/7.0/cli/conf.d/20-jsmin.ini && echo 'extension="jsmin.so"' >>
 RUN echo 'extension="jsmin.so"' >> /tmp/php.ini
 
 # Install Drush
-RUN php -r "readfile('https://s3.amazonaws.com/files.drush.org/drush.phar');" > drush && chmod +x drush
+RUN php -r "readfile('https://github.com/drush-ops/drush/releases/download/8.1.16/drush.phar');" > drush && chmod +x drush
 RUN mv drush /usr/local/bin/
 
 RUN chown -R 104:0 /var/www && chmod -R g+rw /var/www && \
